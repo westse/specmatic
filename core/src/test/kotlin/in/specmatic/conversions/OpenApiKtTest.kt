@@ -2381,38 +2381,6 @@ components:
     }
 
     @Test
-    fun `should run test from wrapper gherkin with concrete value in url matching specification type`() {
-        val contract = parseGherkinStringToFeature("""
-            Feature: Test wrapper of constraints
-              Background:
-                Given openapi core/src/test/resources/openapi/hello_with_constraints.yaml
-                
-              Scenario: Test
-                When GET /hello/1234567890
-                Then status 200
-        """.trimIndent())
-
-        var testCount = 0
-
-        contract.executeTests(object : TestExecutor {
-            override fun execute(request: HttpRequest): HttpResponse {
-                val idValue = request.path!!.split("/").last()
-                assertThat(idValue).hasSizeGreaterThan(9)
-                assertThat(idValue).hasSizeLessThan(21)
-
-                testCount += 1
-
-                return HttpResponse.OK
-            }
-
-            override fun setServerState(serverState: Map<String, Value>) {
-            }
-        })
-
-        assertThat(testCount).isEqualTo(1)
-    }
-
-    @Test
     fun `should fail to run a test from wrapper gherkin with pattern url matching concrete specification value`() {
         assertThatThrownBy {
             parseGherkinStringToFeature(
@@ -2516,6 +2484,30 @@ val contract = OpenApiSpecification.fromYAML("""
             assertThat(it).endsWith("/")
         }
     }
+
+    @Test
+    fun `should error if example field not used`() {
+        assertThatThrownBy {
+            parseGherkinStringToFeature(
+                """
+            Feature: Test wrapper of constraints
+              Background:
+                Given openapi core/src/test/resources/openapi/hello_with_constraints.yaml
+                
+              Scenario: Test
+                When GET /hello/(id:string)
+                Then status 200
+                Examples:
+                | unused1         |
+                | 1234567890 |
+                | 0987654321 |
+        """.trimIndent()
+            )
+        }
+            .hasRootCauseInstanceOf(ContractException::class.java)
+            .hasMessageContaining("unused1")
+    }
+
 }
 
 data class CycleRoot(
