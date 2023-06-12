@@ -6,7 +6,7 @@ import `in`.specmatic.core.Resolver
 import `in`.specmatic.core.pattern.*
 import `in`.specmatic.core.value.StringValue
 
-class APIKeyInQueryParamSecurityScheme(val name: String) : OpenAPISecurityScheme {
+data class APIKeyInQueryParamSecurityScheme(val name: String) : OpenAPISecurityScheme {
     override fun matches(httpRequest: HttpRequest): Boolean {
         return httpRequest.queryParams.containsKey(name)
     }

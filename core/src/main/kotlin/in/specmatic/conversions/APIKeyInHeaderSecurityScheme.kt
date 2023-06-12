@@ -6,7 +6,7 @@ import `in`.specmatic.core.Resolver
 import `in`.specmatic.core.pattern.Row
 import `in`.specmatic.core.pattern.StringPattern
 
-class APIKeyInHeaderSecurityScheme(val name: String) : OpenAPISecurityScheme {
+data class APIKeyInHeaderSecurityScheme(val name: String) : OpenAPISecurityScheme {
     override fun matches(httpRequest: HttpRequest): Boolean {
         return httpRequest.headers.containsKey(name)
     }
