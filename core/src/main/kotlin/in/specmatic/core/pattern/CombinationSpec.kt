@@ -32,14 +32,14 @@ class CombinationSpec<ValueType>(
     private val reversedIndexToKeys = indexToKeys.reversed()
     private val reversedIndexToCandidates = indexToCandidates.reversed()
     private val lastCombination = min(maxCombinations, min(allCombosCount, Int.MAX_VALUE.toLong()).toInt()) - 1
-    private val prioritizedComboIndexes = calculatePrioritizedComboIndexes()
+    internal val prioritizedComboIndexes = calculatePrioritizedComboIndexes()
 
-    val selectedCombinations = toSelectedCombinations()
+    val selectedCombinations = lazy { toSelectedCombinations()}
 
     private fun calculatePrioritizedComboIndexes(): List<Int> {
         // Prioritizes using each candidate value as early as possible so uses first candidate of each set,
         // then second candidate, and so on.
-        val prioritizedCombos = (0 until maxCandidateCount).map { lockStepOffset ->
+        val (_, prioritizedCombos) = (0 until maxCandidateCount).map { lockStepOffset ->
             val fullComboIndex = indexToCandidates.foldIndexed(0) {index, acc, candidates ->
                 // Lower-cardinality sets run out of candidates first so are reused round-robin until other sets finish
                 val candidateOffset = lockStepOffset % candidates.size
@@ -49,6 +49,9 @@ class CombinationSpec<ValueType>(
             // val combo = toCombo(finalComboIndex)
             fullComboIndex
         }
+            // Exclude any index that overflows Int as it is invalid
+            .partition { it < 0 }
+
         return prioritizedCombos
     }
 
