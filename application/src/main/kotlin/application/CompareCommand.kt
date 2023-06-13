@@ -1,6 +1,7 @@
 package application
 
 import `in`.specmatic.core.*
+import `in`.specmatic.core.log.Verbose
 import `in`.specmatic.core.log.logger
 import `in`.specmatic.core.log.logException
 import `in`.specmatic.core.pattern.ContractException
@@ -20,10 +21,16 @@ class CompareCommand : Callable<Unit> {
     @Parameters(index = "1", description = ["Newer contract file path"])
     lateinit var newerContractFilePath: String
 
+    @Option(names = ["--debug"], required = false, defaultValue = "false")
+    var verbose: Boolean = false
+
     @Option(names = ["--mirror"], required = false)
     var mirror: Boolean = false
 
     override fun call() {
+        if(verbose)
+            logger = Verbose()
+
         if(!olderContractFilePath.isContractFile()) {
             logger.log(invalidContractExtensionMessage(olderContractFilePath))
             exitProcess(1)
